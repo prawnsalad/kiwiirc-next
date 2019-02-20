@@ -58,6 +58,7 @@
 import 'font-awesome-webpack';
 import '@/res/globalStyle.css';
 import Tinycon from 'tinycon';
+import swal from 'sweetalert';
 
 import startupWelcome from '@/components/startups/Welcome';
 import startupZncLogin from '@/components/startups/ZncLogin';
@@ -83,6 +84,7 @@ export default {
         Container,
         ControlInput,
         MediaViewer,
+
     },
     data() {
         return {
@@ -103,6 +105,7 @@ export default {
             mediaviewerIframe: false,
             themeUrl: '',
             sidebarState: new SidebarState(),
+            opendialog: null,
         };
     },
     computed: {
@@ -122,6 +125,7 @@ export default {
         this.initStateBrowser();
         this.initMediaviewer();
         this.configureFavicon();
+        this.displaySweetAlert();
 
         document.addEventListener('keydown', event => this.onKeyDown(event), false);
         window.addEventListener('focus', event => this.onFocus(event), false);
@@ -175,6 +179,26 @@ export default {
                 if (component) {
                     this.activeComponentProps = props;
                     this.activeComponent = component;
+                }
+            });
+        },
+        displaySweetAlert() {
+            this.listen(this.$state, 'swal', (type, titleString, component) => {
+                if (type === 'forgetMe') {
+                    swal(titleString, {
+                        content: component,
+                        dangerMode: true,
+                        buttons: {
+                            cancel: true,
+                            confirm: 'Confirm',
+                        },
+                    }).then((value) => {
+                        if (value) {
+                            // Delete locally stored user data
+                            this.$state.persistence.forgetState();
+                            window.location.reload();
+                        }
+                    });
                 }
             });
         },

@@ -48,6 +48,22 @@
                     </div>
 
                     <div class="kiwi-appsettings-block">
+                        <h3>Local Data</h3>
+                        <div class="kiwi-appsettings-section kiwi-appsettings-history">
+                            <p>
+                                Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+                                sed do eiusmod tempor incididunt ut labore et
+                                dolore magna aliqua.
+                            </p>
+                            <span>
+                                <a class="u-button u-button-warning" @click="clickForget()">
+                                    Delete all locally stored data
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="kiwi-appsettings-block">
                         <h3>{{ $t('settings_messages_title') }}</h3>
                         <div class="kiwi-appsettings-section kiwi-appsettings-messages">
                             <label class="kiwi-appsettings-messagelistDisplay">
@@ -180,12 +196,14 @@
 <script>
 'kiwi public';
 
+import Vue from 'vue';
 import _ from 'lodash';
 import state from '@/libs/state';
 import ThemeManager from '@/libs/ThemeManager';
 import GlobalApi from '@/libs/GlobalApi';
 import SettingsAliases from './SettingsAliases';
 import SettingsAdvanced from './SettingsAdvanced';
+import AlertForgetMe from './alerts/alertForgetMe';
 
 /**
  * Returns an object for a vuejs computated property on a state settings value
@@ -331,6 +349,11 @@ export default {
                 this.$watch('customThemeUrl', watchCustomThemeUrl),
             ];
         },
+        clickForget: function clickForget() {
+            let displaybox = new Vue(AlertForgetMe);
+            displaybox.$mount();
+            this.$state.$emit('swal', 'forgetMe', '', displaybox.$el);
+        },
         enableAdvancedTab() {
             this.settingAdvancedEnable = true;
             this.$nextTick(() => {
@@ -461,7 +484,7 @@ export default {
     position: relative;
     box-sizing: border-box;
     text-transform: uppercase;
-    line-height: 47px;
+    line-height: 50px;
     text-align: right;
     transition: background 0.3s;
 }
@@ -490,6 +513,12 @@ export default {
 
 .kiwi-appsettings-messagelistDisplay select {
     float: right;
+}
+
+.kiwi-appsettings-history span {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
 }
 
 @media screen and (max-width: 769px) {
