@@ -1286,7 +1286,7 @@ function clientMiddleware(state, network) {
                 return;
             }
 
-            // TODO: Some of these errors contain a .error property whcih we can match against,
+            // TODO: Some of these errors contain a .error property which we can match against,
             // ie. password_mismatch.
 
             if (event.error === 'bad_channel_key') {
@@ -1301,6 +1301,16 @@ function clientMiddleware(state, network) {
                 let messageBody = TextFormatting.formatText('general_error', {
                     text: event.reason || event.error,
                 });
+
+                if (event.error === 'cannot_send_to_channel') {
+                    let lastMessage = buffer.getLastMessage();
+                    if (lastMessage === messageBody) {
+                        // do not spam the channel with cannot send messages
+                        // when a user is sending typing message-tags
+                        return;
+                    }
+                }
+
                 state.addMessage(buffer, {
                     time: eventTime,
                     server_time: serverTime,
