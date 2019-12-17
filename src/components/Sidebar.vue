@@ -27,10 +27,15 @@
 
                     <tabbed-view>
                         <tabbed-tab :header="$t('settings')" :focus="true">
-                            <h3>{{ $t('channel_settings') }}</h3>
+                            <h3>{{ $t('channel_settings') }}
+                                <span v-if="!areWeAnOp()"
+                                      class="kiwi-channelsettings-disabled">
+                                    {{ $t('mods_only') }}
+                                    <i class="fa fa-lock" aria-hidden="true" />
+                                </span>
+                            </h3>
                             <hr>
                             <channel-info :buffer="buffer"/>
-
                             <div class="kiwi-sidebar-settings">
                                 <h3>{{ $t('side_settings') }}</h3>
                                 <hr>
@@ -253,6 +258,11 @@ export default {
             return type;
         },
     },
+    methods: {
+        areWeAnOp() {
+            return this.buffer.isUserAnOp(this.buffer.getNetwork().nick);
+        },
+    },
 };
 
 </script>
@@ -285,6 +295,11 @@ export default {
 
 .kiwi-sidebar-buffersettings .u-tabbed-content {
     padding: 1em;
+}
+
+.kiwi-sidebar-buffersettings .u-tabbed-content h3 {
+    margin-top: 0;
+    padding-top: 0;
 }
 
 .kiwi-sidebar-userbox {
@@ -324,6 +339,19 @@ export default {
 
 .kiwi-sidebar-options {
     display: none;
+}
+
+.kiwi-channelsettings-disabled {
+    float: right;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 0.8em;
+    padding: 0 16px;
+    background: #afafaf;
+}
+
+.kiwi-channelsettings-disabled i {
+    margin-left: 5px;
 }
 
 @media screen and (max-width: 769px) {
