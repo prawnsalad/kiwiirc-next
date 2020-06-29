@@ -152,6 +152,22 @@
                 </label>
             </form>
         </div>
+        <div
+            v-if="buffer.isQuery() && invitableBuffers.length > 0"
+            class="kiwi-userbox-query-invite kiwi-userbox-actions u-form"
+        >
+            <select v-model="inviteChan">
+                <option value="">{{ $t('select_channel') }}</option>
+                <option
+                    v-for="chan in invitableBuffers"
+                    :key="'inviteChan-' + chan"
+                    :value="chan"
+                >{{ chan }}</option>
+            </select>
+            <a class="kiwi-userbox-action" @click="inviteUser()">
+                {{ $t('invite_user') }}
+            </a>
+        </div>
     </div>
 </template>
 
@@ -179,6 +195,7 @@ export default {
             self: this,
             whoisRequested: false,
             whoisLoading: false,
+            inviteChan: '',
             pluginUiButtonElements: GlobalApi.singleton().userboxButtonPlugins,
         };
     },
@@ -292,6 +309,19 @@ export default {
         isSelf() {
             return this.user === this.network.currentUser();
         },
+        invitableBuffers() {
+            let buffers = [];
+            this.network.buffers.forEach((buffer) => {
+                if (
+                    buffer.isChannel() &&
+                    buffer.isUserAnOp(this.network.nick) &&
+                    !buffer.hasNick(this.user.nick)
+                ) {
+                    buffers.push(buffer.name);
+                }
+            });
+            return buffers;
+        },
     },
     watch: {
         user: function watchUser() {
@@ -397,6 +427,14 @@ export default {
             let reason = this.$state.setting('buffers.default_kick_reason');
             this.network.ircClient.raw('MODE', this.buffer.name, '+b', banMask);
             this.network.ircClient.raw('KICK', this.buffer.name, this.user.nick, reason);
+        },
+        inviteUser() {
+            if (!this.inviteChan) {
+                return;
+            }
+            // TODO switch these back once irc-framework is updated
+            // this.network.ircClient.invite(this.inviteChan, this.user.nick);
+            this.network.ircClient.raw(['INVITE', this.user.nick, this.inviteChan]);
         },
     },
 };
@@ -592,6 +630,10 @@ export default {
 .kiwi-userbox-opaction i {
     margin-right: 0.2em;
     font-size: 1.2em;
+}
+
+.kiwi-userbox-query-invite select {
+    margin-right: 10px;
 }
 
 .kiwi-userbox-whois {
