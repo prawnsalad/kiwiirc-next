@@ -23,24 +23,18 @@
             <span v-if="anyRegisteredUserCanJoin">{{ $t('invite_registered_only') }}</span>
 
             <div>
-                <div v-if="supportsAccounts && areWeAnOp">
-                    <template v-if="knownAccounts.length > 0">
-                        <select ref="addInviteList">
-                            <option
-                                v-for="user in knownAccounts"
-                                :key="user.nick" :value="user.account"
-                            >{{ user.account }}</option>
-                        </select>
-                        <button @click="addAccountInvite($refs.addInviteList.value)">
-                            {{ $t('invite_add_invite') }}
-                        </button>
-                    </template>
-                </div>
-                <div v-if="!supportsAccounts && areWeAnOp" class="kiwi-invitelist-addmask">
-                    <input ref="addInviteText" type="text" class="u-input">
-                    <button @click="addInvite($refs.addInviteText.value)">
+                <div v-if="areWeAnOp" class="kiwi-invitelist-addmask">
+                    <input-text v-model="addMask" list="inviteList" type="text" />
+                    <datalist v-if="supportsAccounts && knownAccounts.length > 0" id="inviteList">
+                        <option
+                            v-for="user in knownAccounts"
+                            :key="'invite-' + user.account"
+                            :value="user.account"
+                        >{{ user.nick }}</option>
+                    </datalist>
+                    <a class="u-button u-button-secondary" @click="addInvite()">
                         {{ $t('invite_add_invite') }}
-                    </button>
+                    </a>
                 </div>
 
                 <table v-if="inviteList.length > 0" class="kiwi-invitelist-table">
@@ -120,6 +114,7 @@ export default {
     props: ['buffer'],
     data() {
         return {
+            addMask: '',
             inviteList: [],
             is_refreshing: false,
         };
@@ -218,18 +213,14 @@ export default {
             this.buffer.getNetwork().ircClient.removeInvite(channelName, mask);
             this.inviteList = this.inviteList.filter((invite) => invite.invited !== mask);
         },
-        addAccountInvite(accountName) {
-            if (!accountName) {
-                return;
-            }
+        addInvite() {
+            let network = this.buffer.getNetwork();
+            let invite = this.supportsAccounts && this.addMask.indexOf('@') === -1 ?
+                `${this.extban}:${this.addMask}` :
+                this.addMask;
 
-            let network = this.buffer.getNetwork();
-            network.ircClient.addInvite(this.buffer.name, `${this.extban}:${accountName}`);
-            this.updateInvitelist();
-        },
-        addInvite(mask) {
-            let network = this.buffer.getNetwork();
-            network.ircClient.addInvite(this.buffer.name, mask);
+            network.ircClient.addInvite(this.buffer.name, invite);
+            this.addMask = '';
             this.updateInvitelist();
         },
         setInviteOnly() {
@@ -266,11 +257,25 @@ export default {
     z-index: 1;
 }
 
-.kiwi-invitelist-addmask {
-    display: flex;
+.kiwi-invitelist-addmask .u-input-text {
+    display: inline-block;
+    margin: 0;
 }
 
-.kiwi-invitelist-addmask > button {
-    flex-shrink: 0;
+.kiwi-invitelist-addmask .u-button {
+    padding: 0.26em 0.9em;
 }
+
+/* TODO remove once firefox improves <input list="">
+   https://bugzilla.mozilla.org/show_bug.cgi?id=1575444 */
+@supports (-moz-appearance:none) {
+    .kiwi-invitelist-addmask > div::after {
+        font-family: fontAwesome, sans-serif;
+        position: absolute;
+        content: '\f0d7';
+        top: 5px;
+        right: 6px;
+    }
+}
+
 </style>

@@ -45,6 +45,7 @@
                 v-else
                 :id="inputId"
                 v-model="currentValue"
+                :list="list"
                 autocomplete="off"
                 autocorrect="off"
                 autocapitalize="off"
@@ -66,7 +67,7 @@
 let Vue = require('vue');
 
 export default Vue.component('input-text', {
-    props: ['value', 'label', 'type', 'showPlainText'],
+    props: ['value', 'label', 'type', 'list', 'showPlainText'],
     data: function data() {
         return {
             plainTextEnabled: false,
