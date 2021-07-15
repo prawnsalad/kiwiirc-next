@@ -106,6 +106,10 @@ export default Vue.component('irc-input', {
                 this.setColour(this.default_colour.code, this.default_colour.colour);
             }
 
+            // Chrome sometimes focus' the element but does not add the cursor
+            // https://bugs.chromium.org/p/chromium/issues/detail?id=1213887
+            this.focus();
+
             this.$emit('focus', event);
         },
         updateValueProps() {
